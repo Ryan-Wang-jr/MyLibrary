@@ -299,7 +299,16 @@ public:
 		return Iterator(After);
 	}
 
-	template <class InputIterator, std::enable_if_t<std::_Is_iterator_v<InputIterator>, int> = 0>
+private:
+	template <class Iter, class = void>
+	static constexpr bool isIterator = false;
+	
+	template <class Iter>
+	static constexpr bool isIterator<
+		Iter, std::void_t<typename std::iterator_traits<Iter>::iterator_category>> = true;
+
+public:
+	template <class InputIterator, std::enable_if_t<isIterator<InputIterator>, int> = 0>
 	Iterator insertAfter(ConstIterator p_Where, InputIterator p_First, InputIterator p_Last) {
 		for (; p_First != p_Last; ++p_First) {
 			p_Where = insertAfter(p_Where, *p_First);
