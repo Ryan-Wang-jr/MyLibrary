@@ -2,7 +2,7 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>C:\dev\MyLibrary\bin\Debug-x64\MyLibrary\MyLibrary.exe</FullPath>
+      <FullPath>C:\dev\vs\MyLibrary\bin\Debug-x64\MyLibrary\MyLibrary.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />

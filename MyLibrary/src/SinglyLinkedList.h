@@ -333,8 +333,94 @@ public:
 	}
 
 	//void swap();
-	void resize(SizeType n);
-	void resize(SizeType n, const ValueType& Val);
+
+	void resize(SizeType n) {
+		if (n == 0) {
+			this->clear();
+			return;
+		}
+
+		if (this->empty()) {
+			m_Head = new _Node();
+			_NodePointer curr = m_Head;
+			while (--n > 0) {
+				_NodePointer temp = new _Node();
+				curr->Next = temp;
+				curr = curr->Next;
+			}
+			return;
+		}
+
+		_NodePointer curr = m_Head->Next;
+		_NodePointer prev = m_Head;
+
+		while (--n > 0 && curr) {
+			prev = curr;
+			curr = curr->Next;
+		}
+
+		if (n == 0) {
+			// shrink
+			prev->Next = nullptr;
+			while (curr) {
+				_NodePointer temp = curr;
+				curr = curr->Next;
+				delete temp;
+			}
+		} else if (curr == nullptr) {
+			// expand
+			while (n > 0) {
+				_NodePointer temp = new _Node();
+				prev->Next = temp;
+				prev = prev->Next;
+				--n;
+			}
+		}
+	}
+
+	void resize(SizeType n, const ValueType& Val) {
+		if (n == 0) {
+			this->clear();
+			return;
+		}
+
+		if (this->empty()) {
+			m_Head = new _Node(Val);
+			_NodePointer curr = m_Head;
+			while (--n > 0) {
+				_NodePointer temp = new _Node(Val);
+				curr->Next = temp;
+				curr = curr->Next;
+			}
+			return;
+		}
+
+		_NodePointer curr = m_Head->Next;
+		_NodePointer prev = m_Head;
+
+		while (--n > 0 && curr) {
+			prev = curr;
+			curr = curr->Next;
+		}
+
+		if (n == 0) {
+			// shrink
+			prev->Next = nullptr;
+			while (curr) {
+				_NodePointer temp = curr;
+				curr = curr->Next;
+				delete temp;
+			}
+		} else if (curr == nullptr) {
+			// expand
+			while (n > 0) {
+				_NodePointer temp = new _Node(Val);
+				prev->Next = temp;
+				prev = prev->Next;
+				--n;
+			}
+		}
+	}
 
 	void clear() {
 		while (m_Head) {
@@ -360,111 +446,6 @@ public:
 private:
 	_NodePointer m_Head;
 };
-
-
-////////////////////////
-// Method Definitions //
-////////////////////////
-
-
-template<typename T>
-inline void SinglyLinkedList<T>::resize(SizeType n) {
-	if (n == 0) {
-		this->clear();
-		return;
-	}
-
-	if (this->empty()) {
-		m_Head = new Node<ValueType>();
-		Node<ValueType>* curr = m_Head;
-		--n;
-		while (n > 0) {
-			Node<ValueType>* temp = new Node<ValueType>();
-			curr->Next = temp;
-			curr = curr->Next;
-			--n;
-		}
-		return;
-	}
-
-	Node<ValueType>* curr = m_Head->Next;
-	Node<ValueType>* prev = m_Head;
-	--n;
-
-	while (n > 0 && curr) {
-		prev = curr;
-		curr = curr->Next;
-		--n;
-	}
-
-	if (n == 0) {
-		// Shrink
-		prev->Next = nullptr;
-		while (curr) {
-			Node<ValueType>* temp = curr;
-			curr = curr->Next;
-			delete temp;
-		}
-	} else if (curr == nullptr) {
-		// Expand
-		while (n > 0) {
-			Node<ValueType>* temp = new Node<ValueType>();
-			prev->Next = temp;
-			prev = prev->Next;
-			--n;
-		}
-	}
-}
-
-template<typename T>
-inline void SinglyLinkedList<T>::resize(SizeType n, const ValueType& Val) {
-	if (n == 0) {
-		this->clear();
-		return;
-	}
-
-	if (this->empty()) {
-		m_Head = new Node<ValueType>(Val);
-		Node<ValueType>* curr = m_Head;
-		--n;
-		while (n > 0) {
-			Node<ValueType>* temp = new Node<ValueType>(Val);
-			curr->Next = temp;
-			curr = curr->Next;
-			--n;
-		}
-		return;
-	}
-
-	Node<ValueType>* curr = m_Head->Next;
-	Node<ValueType>* prev = m_Head;
-	--n;
-
-	while (n > 0 && curr) {
-		prev = curr;
-		curr = curr->Next;
-		--n;
-	}
-
-	if (n == 0) {
-		prev->Next = nullptr;
-		while (curr) {
-			Node<ValueType>* temp = curr;
-			curr = curr->Next;
-			delete temp;
-		}
-	} else if (curr == nullptr) {
-		while (n > 0) {
-			Node<ValueType>* temp = new Node<ValueType>(Val);
-			prev->Next = temp;
-			prev = prev->Next;
-			--n;
-		}
-	}
-}
-
-
-
 
 } // namespace lan
 
