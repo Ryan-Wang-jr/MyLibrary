@@ -26,7 +26,6 @@ struct Node {
 
 	~Node() {
 		Next = nullptr;
-		std::cout << "Destroy Node!\n";
 	}
 
 	_NodePointer Next;

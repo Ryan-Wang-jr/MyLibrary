@@ -1,24 +1,55 @@
 #include <iostream>
-#include <vector>
+#include <forward_list>
 
 #include "SinglyLinkedList.h"
 #include "Vec3.h"
+#include "Timer.h"
 
 int main() {
 	std::cout << "Welcome to my library!\n";
 
-
-	lan::SinglyLinkedList<int> Test(2, 1);
-
-	// std::vector<int> mid(3, 2);
-	lan::SinglyLinkedList<int> mid(2, 2);
-
-	Test.insertAfter(Test.cBegin(), mid.begin(), mid.end());
-
-	for (const auto& element : Test) {
-		std::cout << element << ", ";
+	std::cout << "___________________________________\n";
+	std::cout << "[Test1] : fill constructor\n";
+	std::cout << "LAN implementation : ";
+	{
+		Timer Test1;
+		for (int i = 0; i < 100; ++i) {
+			lan::SinglyLinkedList<int> Container(100, 1);
+		}
 	}
-	std::cout << '\n';
+	std::cout << "STD implementation : ";
+	{
+		Timer Test1;
+		for (int i = 0; i < 100; ++i) {
+			std::forward_list<int> Container(100, 1);
+		}
+	}
 
+	std::cout << "___________________________________\n";
+	std::cout << "[Test2] : iterator traversal\n";
+	std::cout << "LAN implementation : ";
+	{
+		lan::SinglyLinkedList<int> Container(100, 1);
+		Timer Time;
+		for (int i = 0; i < 100; ++i) {
+			auto begin = Container.begin();
+			auto end = Container.end();
+			for (; begin != end; ++begin) {
+				++(*begin);
+			}
+		}
+	}
+	std::cout << "STD implementation : ";
+	{
+		std::forward_list<int> Container(100, 1);
+		Timer Time;
+		for (int i = 0; i < 100; ++i) {
+			auto begin = Container.begin();
+			auto end = Container.end();
+			for (; begin != end; ++begin) {
+				++(*begin);
+			}
+		}
+	}
 	return 0;
 }
