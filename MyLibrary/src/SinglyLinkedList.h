@@ -26,11 +26,19 @@ struct Node {
 
 	~Node() {
 		Next = nullptr;
+		// std::cout << "Destroy Node!\n";
 	}
 
-	_NodePointer Next;
-	T Val;
+	_NodePointer Next; // successor node
+	T Val; // the stored value
 };
+
+template <class Iter, class = void>
+constexpr bool isIterator = false;
+	
+template <class Iter>
+constexpr bool isIterator<
+	Iter, std::void_t<typename std::iterator_traits<Iter>::iterator_category>> = true;
 
 template <class MyList>
 class ListConstIterator {
@@ -132,38 +140,133 @@ public:
 	using SizeType       = std::size_t;
 
 public:
+	/////////////////
+	// Constructor //
+	/////////////////
+
 	SinglyLinkedList()
 		: m_Head(nullptr) {}
 
-	SinglyLinkedList(SizeType n) {
+	SinglyLinkedList(SizeType p_Count)
+		: m_Head(nullptr) {
+		if (p_Count == 0)
+			return;
+
 		m_Head = new _Node();
 		_NodePointer curr = m_Head;
-		while (--n > 0) {
+		while (--p_Count > 0) {
 			const _NodePointer temp = new _Node();
 			curr->Next = temp;
 			curr = curr->Next;
 		}
 	}
 
-	SinglyLinkedList(SizeType n, const ValueType& Val) {
+	SinglyLinkedList(SizeType p_Count, const ValueType& Val)
+		: m_Head(nullptr)  {
+		if (p_Count == 0)
+			return;
+
 		m_Head = new _Node(Val);
 		_NodePointer curr = m_Head;
-		while (--n > 0) {
+		while (--p_Count > 0) {
 			const _NodePointer temp = new _Node(Val);
 			curr->Next = temp;
 			curr = curr->Next;
 		}
 	}
-	//SinglyLinkedList(const SinglyLinkedList& Other);
-	//SinglyLinkedList(SinglyLinkedList&& Other);
-	//SinglyLinkedList(std::initializer_list<ValueType> il);
 
+	template <class InputIterator, std::enable_if_t<isIterator<InputIterator>, int> = 0>
+	SinglyLinkedList(InputIterator p_First, InputIterator p_Last)
+		: m_Head(nullptr) {
+		m_Head = new _Node(*p_First);
+		_NodePointer Prev = m_Head;
+		++p_First;
+		for (; p_First != p_Last; ++p_First) {
+			_NodePointer NewNode = new _Node(*p_First);
+			Prev->Next = NewNode;
+			Prev = NewNode;
+		}
+	}
+
+	SinglyLinkedList(const SinglyLinkedList& p_Other) 
+		: m_Head(nullptr) {
+		if (p_Other.empty())
+			return;
+
+		_NodePointer Copy = p_Other.m_Head;
+		m_Head = new _Node(Copy->Val);
+		_NodePointer Prev = m_Head;
+		Copy = Copy->Next;
+		while (Copy) {
+			_NodePointer NewNode = new _Node(Copy->Val);
+			Prev->Next = NewNode;
+			Prev = NewNode;
+			Copy = Copy->Next;
+		}
+	}
+
+	SinglyLinkedList(SinglyLinkedList&& p_Other)
+		: m_Head(p_Other.m_Head) {
+		p_Other.m_Head = nullptr;
+	}
+
+	SinglyLinkedList(std::initializer_list<ValueType> p_Ilist)
+	: m_Head(nullptr) {
+		insertAfter(beforeBegin(), p_Ilist.begin(), p_Ilist.end());
+	}
+
+
+
+	////////////////
+	// Destructor //
+	////////////////
 
 	~SinglyLinkedList() {
 		clear();
 	}
-	//SinglyLinkedList& operator=(const SinglyLinkedList& Other);
 
+
+
+	///////////////
+	// Operator= //
+	///////////////
+
+	SinglyLinkedList& operator=(const SinglyLinkedList& p_Other) {
+		clear();
+		if (p_Other.empty())
+			return *this;
+
+		_NodePointer Copy = p_Other.m_Head;
+		m_Head = new _Node(Copy->Val);
+		_NodePointer Prev = m_Head;
+		Copy = Copy->Next;
+		while (Copy) {
+			_NodePointer Curr = new _Node(Copy->Val);
+			Prev->Next = Curr;
+			Prev = Curr;
+			Copy = Copy->Next;
+		}
+		return *this;
+	}
+
+	SinglyLinkedList& operator=(SinglyLinkedList&& p_Other) {
+		clear();
+
+		m_Head = p_Other.m_Head;
+		p_Other.m_Head = nullptr;
+		return *this;
+	}
+
+	SinglyLinkedList& operator=(std::initializer_list<ValueType> p_Ilist) {
+		assign(p_Ilist.begin(), p_Ilist.end());
+		return *this;
+	}
+
+
+
+	///////////////
+	// Iterators //
+	///////////////
 
 private:
 	_NodePointer _BeforeHead() const {
@@ -172,10 +275,6 @@ private:
 	}
 
 public:
-	///////////////
-	// Iterators //
-	///////////////
-
 	Iterator beforeBegin() {
 		return Iterator(_BeforeHead());
 	}
@@ -224,6 +323,7 @@ public:
 	//bool max_size();
 
 
+
 	////////////////////
 	// Element Access //
 	////////////////////
@@ -236,9 +336,25 @@ public:
 	}
 
 
+
 	///////////////
 	// Modifiers //
 	///////////////
+
+	template <class InputIterator, std::enable_if_t<isIterator<InputIterator>, int> = 0>
+	void assign(InputIterator p_First, InputIterator p_Last) {
+		clear();
+		insertAfter(beforeBegin(), p_First, p_Last);
+	}
+
+	void assign(SizeType p_Count, const ValueType& p_Val) {
+		clear();
+		insertAfter(beforeBegin(), p_Count, p_Val);
+	}
+
+	void assign(std::initializer_list<ValueType> p_Ilist) {
+		assign(p_Ilist.begin(), p_Ilist.end());
+	}
 
 private:
 	template <typename... Args>
@@ -254,7 +370,6 @@ private:
 	}
 
 public:
-	//void assign();
 	template <typename... Args>
 	void emplaceFront(Args&&... p_Args) {
 		_InsertAfter(_BeforeHead(), std::forward<Args>(p_Args)...);
@@ -298,21 +413,16 @@ public:
 		return Iterator(After);
 	}
 
-private:
-	template <class Iter, class = void>
-	static constexpr bool isIterator = false;
-	
-	template <class Iter>
-	static constexpr bool isIterator<
-		Iter, std::void_t<typename std::iterator_traits<Iter>::iterator_category>> = true;
-
-public:
 	template <class InputIterator, std::enable_if_t<isIterator<InputIterator>, int> = 0>
 	Iterator insertAfter(ConstIterator p_Where, InputIterator p_First, InputIterator p_Last) {
 		for (; p_First != p_Last; ++p_First) {
 			p_Where = insertAfter(p_Where, *p_First);
 		}
 		return Iterator(p_Where.m_Ptr);
+	}
+
+	Iterator insertAfter(ConstIterator p_Where, std::initializer_list<ValueType> p_Ilist) {
+		return insertAfter(p_Where, p_Ilist.begin(), p_Ilist.end());
 	}
 
 	Iterator eraseAfter(ConstIterator p_Where) {
@@ -331,94 +441,51 @@ public:
 		return Iterator(p_Last.m_Ptr);
 	}
 
-	//void swap();
-
-	void resize(SizeType n) {
-		if (n == 0) {
-			this->clear();
-			return;
-		}
-
-		if (this->empty()) {
-			m_Head = new _Node();
-			_NodePointer curr = m_Head;
-			while (--n > 0) {
-				_NodePointer temp = new _Node();
-				curr->Next = temp;
-				curr = curr->Next;
+	void swap(SinglyLinkedList& p_Other) {
+		_NodePointer Temp = m_Head;
+		m_Head = p_Other.m_Head;
+		p_Other.m_Head = Temp;
+	}
+private:
+	template <typename... Args>
+	void _Resize(SizeType p_NewSize, Args&&... p_Args) {
+		_NodePointer Prev = _BeforeHead();
+		for (;;) {
+			_NodePointer Curr = Prev->Next;
+			if (!Curr) {
+				// list too short, expand
+				while (p_NewSize > 0) {
+					_NodePointer Temp = new _Node(p_Args...);
+					Prev->Next = Temp;
+					Prev = Temp;
+					--p_NewSize;
+				}
+				return;
 			}
-			return;
-		}
 
-		_NodePointer curr = m_Head->Next;
-		_NodePointer prev = m_Head;
-
-		while (--n > 0 && curr) {
-			prev = curr;
-			curr = curr->Next;
-		}
-
-		if (n == 0) {
-			// shrink
-			prev->Next = nullptr;
-			while (curr) {
-				_NodePointer temp = curr;
-				curr = curr->Next;
-				delete temp;
+			if (p_NewSize == 0) {
+				// list too long, shrink
+				Prev->Next = nullptr;
+				while (Curr) {
+					_NodePointer Temp = Curr;
+					Curr = Curr->Next;
+					delete Temp;
+				}
+				return;
 			}
-		} else if (curr == nullptr) {
-			// expand
-			while (n > 0) {
-				_NodePointer temp = new _Node();
-				prev->Next = temp;
-				prev = prev->Next;
-				--n;
-			}
+
+			Prev = Curr;
+			--p_NewSize;
 		}
 	}
 
-	void resize(SizeType n, const ValueType& Val) {
-		if (n == 0) {
-			this->clear();
-			return;
-		}
+public:
+	void resize(SizeType p_NewSize) {
+		_Resize(p_NewSize);
+	}
 
-		if (this->empty()) {
-			m_Head = new _Node(Val);
-			_NodePointer curr = m_Head;
-			while (--n > 0) {
-				_NodePointer temp = new _Node(Val);
-				curr->Next = temp;
-				curr = curr->Next;
-			}
-			return;
-		}
-
-		_NodePointer curr = m_Head->Next;
-		_NodePointer prev = m_Head;
-
-		while (--n > 0 && curr) {
-			prev = curr;
-			curr = curr->Next;
-		}
-
-		if (n == 0) {
-			// shrink
-			prev->Next = nullptr;
-			while (curr) {
-				_NodePointer temp = curr;
-				curr = curr->Next;
-				delete temp;
-			}
-		} else if (curr == nullptr) {
-			// expand
-			while (n > 0) {
-				_NodePointer temp = new _Node(Val);
-				prev->Next = temp;
-				prev = prev->Next;
-				--n;
-			}
-		}
+	void resize(SizeType p_NewSize, const ValueType& p_Val) {
+		_Resize(p_NewSize, p_Val);
 	}
 
 	void clear() {
