@@ -4,6 +4,7 @@
 #include <iostream>
 #include <initializer_list>
 #include <utility>
+#include <memory>
 
 namespace lan {
 
@@ -250,10 +251,11 @@ public:
 	}
 
 	SinglyLinkedList& operator=(SinglyLinkedList&& p_Other) {
-		clear();
-
-		m_Head = p_Other.m_Head;
-		p_Other.m_Head = nullptr;
+		if (m_Head != p_Other.m_Head) {
+			clear();
+			m_Head = p_Other.m_Head;
+			p_Other.m_Head = nullptr;
+		}
 		return *this;
 	}
 
@@ -500,11 +502,108 @@ public:
 	////////////////
 	// Operations //
 	////////////////
+private:
+	void _SpliceAfter(_NodePointer p_Where, _NodePointer p_Prev) {
+		if (p_Where != p_Prev) {
+			const _NodePointer First = p_Prev->Next;
+			if (p_Where != First) {
+				p_Prev->Next = First->Next;
+				First->Next = p_Where->Next;
+				p_Where->Next = First;
+			}
+		}
+	}
 
-	//void spliceAfter();
-	//void remove();
-	//void removeIf();
-	//void unique();
+	void _SpliceAfter(ConstIterator p_Where, ConstIterator p_First, ConstIterator p_Last) {
+		if (p_First == p_Last)
+			return;
+
+		ConstIterator After = p_First;
+		++After;
+		if (After == p_Last)
+			return;
+
+		ConstIterator Tail = p_First;
+		do {
+			Tail = After;
+			++After;
+		} while (After != p_Last);
+
+		Tail.m_Ptr->Next = p_Where.m_Ptr->Next;
+		p_Where.m_Ptr->Next = p_First.m_Ptr->Next;
+		p_First.m_Ptr->Next = p_Last.m_Ptr;
+	}
+
+public:
+	void spliceAfter(ConstIterator p_Where, SinglyLinkedList& p_Other) {
+		if (this != std::addressof(p_Other))
+			_SpliceAfter(p_Where, p_Other.beforeBegin(), p_Other.end());
+	}
+
+	void spliceAfter(ConstIterator p_Where, SinglyLinkedList&& p_Other) {
+		spliceAfter(p_Where, p_Other);
+	}
+
+	void spliceAfter(ConstIterator p_Where, SinglyLinkedList& p_Other, ConstIterator p_First) {
+		(void)p_Other;
+		_SpliceAfter(p_Where.m_Ptr, p_First.m_Ptr);
+	}
+
+	void spliceAfter(ConstIterator p_Where, SinglyLinkedList&& p_Other, ConstIterator p_Target) {
+		spliceAfter(p_Where, p_Other, p_Target);
+	}
+
+	void spliceAfter(ConstIterator p_Where, SinglyLinkedList& p_Other,
+					 ConstIterator p_First, ConstIterator p_Last) {
+		(void)p_Other;
+		_SpliceAfter(p_Where, p_First, p_Last);
+	}
+
+	void spliceAfter(ConstIterator p_Where, SinglyLinkedList&& p_Other,
+					 ConstIterator p_First, ConstIterator p_Last) {
+		spliceAfter(p_Where, p_Other, p_First, p_Last);
+	}
+
+	void remove(const ValueType& p_Val) {
+		removeIf([&](const ValueType& p_Each) { return p_Each = p_Val; });
+	}
+
+	template <class Predicate>
+	void removeIf(Predicate p_Pred) {
+		_NodePointer Curr = m_Head;
+		_NodePointer Prev = _BeforeHead();
+		while (Curr) {
+			if (p_Pred(Curr->Val)) {
+				Prev->Next = Curr->Next;
+				delete Curr;
+				Curr = Prev->Next;
+			} else {
+				Prev = Curr;
+				Curr = Curr->Next;
+			}
+		}
+	}
+
+	void unique() {
+		unique([](const ValueType& p_First, const ValueType& p_Second) { return p_First == p_Second; });
+	}
+
+	template <class Predicate>
+	void unique(Predicate p_Pred) {
+		_NodePointer Curr = m_Head;
+		_NodePointer Prev = _BeforeHead();
+		while (Curr) {
+			if (p_Pred(Prev->Val, Curr->Val)) {
+				Prev->Next = Curr->Next;
+				delete Curr;
+				Curr = Prev->Next;
+			} else {
+				Prev = Curr;
+				Curr = Curr->Next;
+			}
+		}
+	}
+
 	//void merge();
 	//void sort();
 	//void reverse();
