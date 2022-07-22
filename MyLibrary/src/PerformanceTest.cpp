@@ -33,7 +33,7 @@ struct fillConstructor {
 void performanceTest() {
 
 	helper(1, "Fill Constructor",
-		fillConstructor<std::forward_list<int>>(),
-		fillConstructor<lan::SinglyLinkedList<int>>());
+		fillConstructor<lan::SinglyLinkedList<int>>(),
+		fillConstructor<std::forward_list<int>>());
 
 }
