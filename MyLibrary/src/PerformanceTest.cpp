@@ -6,7 +6,8 @@
 #include "Timer.h"
 #include "PerformanceTest.h"
 
-static void helper(const int count, const char* info, void (*Func1)(), void (*Func2)()) {
+template <class Functor1, class Functor2>
+static void helper(const int count, const char* info, Functor1 Func1, Functor2 Func2) {
 	static const char* line    = "___________________________________\n";
 	static const char* test    = "[Test%d] : %s\n";
 	static const char* lan_imp = "LAN implementation : ";
@@ -19,40 +20,20 @@ static void helper(const int count, const char* info, void (*Func1)(), void (*Fu
 	Func2();
 }
 
+template <class Container>
+struct fillConstructor {
+	void operator()() {
+		Timer Time;
+		for (int i = 0; i < 100; ++i) {
+			Container Cont(1000, 1);
+		}
+	}
+};
+
 void performanceTest() {
 
-	helper(1, "Fill Constructor", [] {
-			Timer Time;
-			for (int i = 0; i < 100; ++i) {
-				lan::SinglyLinkedList<int> Container(100, 1);
-			}
-		}, [] {
-			Timer Time;
-			for (int i = 0; i < 100; ++i) {
-				std::forward_list<int> Container(100, 1);
-			}
-		});
-
-	helper(2, "Iterator Traversal", [] {
-			lan::SinglyLinkedList<int> Container(100, 1);
-			Timer Time;
-			for (int i = 0; i < 100; ++i) {
-				auto begin = Container.begin();
-				auto end = Container.end();
-				for (; begin != end; ++begin) {
-					++(*begin);
-				}
-			}
-		}, [] {
-			std::forward_list<int> Container(100, 1);
-			Timer Time;
-			for (int i = 0; i < 100; ++i) {
-				auto begin = Container.begin();
-				auto end = Container.end();
-				for (; begin != end; ++begin) {
-					++(*begin);
-				}
-			}
-		});
+	helper(1, "Fill Constructor",
+		fillConstructor<std::forward_list<int>>(),
+		fillConstructor<lan::SinglyLinkedList<int>>());
 
 }
