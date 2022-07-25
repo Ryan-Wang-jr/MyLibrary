@@ -151,6 +151,7 @@
     <ClCompile Include="src\PerformanceTest.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\PerformanceTestObject.h" />
     <ClInclude Include="src\PerformanceTest.h" />
     <ClInclude Include="src\Timer.h" />
     <ClInclude Include="src\Vec3.h" />

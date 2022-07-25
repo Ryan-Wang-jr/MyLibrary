@@ -35,27 +35,27 @@ struct Node {
 };
 
 template <class Iter, class = void>
-constexpr bool isIterator = false;
+constexpr bool isiterator = false;
 	
 template <class Iter>
-constexpr bool isIterator<
+constexpr bool isiterator<
 	Iter, std::void_t<typename std::iterator_traits<Iter>::iterator_category>> = true;
 
 template <class MyList>
-class ListConstIterator {
+class Listconst_iterator {
 public:
 	using _NodePointer      = typename MyList::_NodePointer;
 
 	using iterator_category = std::forward_iterator_tag;
-	using value_type        = typename MyList::ValueType;
-	using difference_type   = typename MyList::DifferenceType;
-	using pointer           = typename MyList::ConstPointer;
+	using value_type        = typename MyList::value_type;
+	using difference_type   = typename MyList::difference_type;
+	using pointer           = typename MyList::const_pointer;
 	using reference         = const value_type&;
 
 public:
-	ListConstIterator() : m_Ptr(nullptr) {}
-	ListConstIterator(_NodePointer ptr) : m_Ptr(ptr) {}
-	~ListConstIterator() { m_Ptr = nullptr; }
+	Listconst_iterator() : m_Ptr(nullptr) {}
+	Listconst_iterator(_NodePointer ptr) : m_Ptr(ptr) {}
+	~Listconst_iterator() { m_Ptr = nullptr; }
 
 	reference operator*() const {
 		return m_Ptr->Val;
@@ -65,22 +65,22 @@ public:
 		return std::pointer_traits<pointer>::pointer_to(**this);
 	}
 
-	ListConstIterator& operator++() {
+	Listconst_iterator& operator++() {
 		m_Ptr = m_Ptr->Next;
 		return *this;
 	}
 
-	ListConstIterator operator++(int) {
-		ListConstIterator Temp(m_Ptr);
+	Listconst_iterator operator++(int) {
+		Listconst_iterator Temp(m_Ptr);
 		m_Ptr = m_Ptr->Next;
 		return Temp;
 	}
 
-	bool operator==(const ListConstIterator& Right) const {
+	bool operator==(const Listconst_iterator& Right) const {
 		return m_Ptr == Right.m_Ptr;
 	}
 
-	bool operator!=(const ListConstIterator& Right) const {
+	bool operator!=(const Listconst_iterator& Right) const {
 		return !(*this == Right);
 	}
 
@@ -88,20 +88,20 @@ public:
 };
 
 template <class MyList>
-class ListIterator : public ListConstIterator<MyList> {
+class Listiterator : public Listconst_iterator<MyList> {
 public:
-	using _MyBase           = ListConstIterator<MyList>;
+	using _MyBase           = Listconst_iterator<MyList>;
 	using _NodePointer      = typename MyList::_NodePointer;
 
 	using iterator_category = std::forward_iterator_tag;
-	using value_type        = typename MyList::ValueType;
-	using difference_type   = typename MyList::DifferenceType;
-	using pointer           = typename MyList::Pointer;
+	using value_type        = typename MyList::value_type;
+	using difference_type   = typename MyList::difference_type;
+	using pointer           = typename MyList::pointer;
 	using reference         = value_type&;
 
 public:
 
-	ListIterator(_NodePointer p_Ptr) : _MyBase(p_Ptr) {}
+	Listiterator(_NodePointer p_Ptr) : _MyBase(p_Ptr) {}
 
 	reference operator*() const {
 		return const_cast<reference>(_MyBase::operator*());
@@ -111,13 +111,13 @@ public:
 		return std::pointer_traits<pointer>::pointer_to(**this);
 	}
 
-	ListIterator& operator++() {
+	Listiterator& operator++() {
 		_MyBase::operator++();
 		return *this;
 	}
 
-	ListIterator operator++(int) {
-		ListIterator Temp(*this);
+	Listiterator operator++(int) {
+		Listiterator Temp(*this);
 		_MyBase::operator++();
 		return Temp;
 	}
@@ -130,15 +130,15 @@ public:
 	using _Node          = typename std::pointer_traits<_NodePointer>::element_type;
 
 public:
-	using ValueType      = T;
-	using Reference      = ValueType&;
-	using ConstReference = const ValueType&;
-	using Pointer        = ValueType*;
-	using ConstPointer   = const ValueType*;
-	using Iterator       = ListIterator<SinglyLinkedList<ValueType>>;
-	using ConstIterator  = ListConstIterator<SinglyLinkedList<ValueType>>;
-	using DifferenceType = std::ptrdiff_t;
-	using SizeType       = std::size_t;
+	using value_type      = T;
+	using reference       = value_type&;
+	using const_reference = const value_type&;
+	using pointer         = value_type*;
+	using const_pointer   = const value_type*;
+	using iterator        = Listiterator<SinglyLinkedList<value_type>>;
+	using const_iterator  = Listconst_iterator<SinglyLinkedList<value_type>>;
+	using difference_type = std::ptrdiff_t;
+	using size_type       = std::size_t;
 
 public:
 	/////////////////
@@ -148,7 +148,7 @@ public:
 	SinglyLinkedList()
 		: m_Head(nullptr) {}
 
-	SinglyLinkedList(SizeType p_Count)
+	SinglyLinkedList(size_type p_Count)
 		: m_Head(nullptr) {
 		if (p_Count == 0)
 			return;
@@ -162,7 +162,7 @@ public:
 		}
 	}
 
-	SinglyLinkedList(SizeType p_Count, const ValueType& Val)
+	SinglyLinkedList(size_type p_Count, const value_type& Val)
 		: m_Head(nullptr)  {
 		if (p_Count == 0)
 			return;
@@ -176,8 +176,8 @@ public:
 		}
 	}
 
-	template <class InputIterator, std::enable_if_t<isIterator<InputIterator>, int> = 0>
-	SinglyLinkedList(InputIterator p_First, InputIterator p_Last)
+	template <class Inputiterator, std::enable_if_t<isiterator<Inputiterator>, int> = 0>
+	SinglyLinkedList(Inputiterator p_First, Inputiterator p_Last)
 		: m_Head(nullptr) {
 		m_Head = new _Node(*p_First);
 		_NodePointer Prev = m_Head;
@@ -211,9 +211,9 @@ public:
 		p_Other.m_Head = nullptr;
 	}
 
-	SinglyLinkedList(std::initializer_list<ValueType> p_Ilist)
+	SinglyLinkedList(std::initializer_list<value_type> p_Ilist)
 	: m_Head(nullptr) {
-		insertAfter(beforeBegin(), p_Ilist.begin(), p_Ilist.end());
+		insertAfter(before_begin(), p_Ilist.begin(), p_Ilist.end());
 	}
 
 
@@ -259,7 +259,7 @@ public:
 		return *this;
 	}
 
-	SinglyLinkedList& operator=(std::initializer_list<ValueType> p_Ilist) {
+	SinglyLinkedList& operator=(std::initializer_list<value_type> p_Ilist) {
 		assign(p_Ilist.begin(), p_Ilist.end());
 		return *this;
 	}
@@ -277,39 +277,39 @@ private:
 	}
 
 public:
-	Iterator beforeBegin() {
-		return Iterator(_BeforeHead());
+	iterator before_begin() {
+		return iterator(_BeforeHead());
 	}
 
-	ConstIterator beforeBegin() const {
-		return ConstIterator(_BeforeHead());
+	const_iterator before_begin() const {
+		return const_iterator(_BeforeHead());
 	}
 
-	Iterator begin() {
-		return Iterator(m_Head);
+	iterator begin() {
+		return iterator(m_Head);
 	}
 
-	ConstIterator begin() const {
-		return ConstIterator(m_Head);
+	const_iterator begin() const {
+		return const_iterator(m_Head);
 	}
 
-	Iterator end() {
-		return Iterator(nullptr);
+	iterator end() {
+		return iterator(nullptr);
 	}
 
-	ConstIterator end() const {
-		return ConstIterator(nullptr);
+	const_iterator end() const {
+		return const_iterator(nullptr);
 	}
 
-	ConstIterator cBeforeBegin() const {
-		return beforeBegin();
+	const_iterator cbefore_begin() const {
+		return before_begin();
 	}
 
-	ConstIterator cBegin() const {
+	const_iterator cbegin() const {
 		return begin();
 	}
 
-	ConstIterator cEnd() const {
+	const_iterator cend() const {
 		return end();
 	}
 
@@ -330,10 +330,10 @@ public:
 	// Element Access //
 	////////////////////
 
-	Reference front() {
+	reference front() {
 		return m_Head->Val;
 	}
-	ConstReference front() const {
+	const_reference front() const {
 		return m_Head->Val;
 	}
 
@@ -343,18 +343,18 @@ public:
 	// Modifiers //
 	///////////////
 
-	template <class InputIterator, std::enable_if_t<isIterator<InputIterator>, int> = 0>
-	void assign(InputIterator p_First, InputIterator p_Last) {
+	template <class Inputiterator, std::enable_if_t<isiterator<Inputiterator>, int> = 0>
+	void assign(Inputiterator p_First, Inputiterator p_Last) {
 		clear();
-		insertAfter(beforeBegin(), p_First, p_Last);
+		insert_after(before_begin(), p_First, p_Last);
 	}
 
-	void assign(SizeType p_Count, const ValueType& p_Val) {
+	void assign(size_type p_Count, const value_type& p_Val) {
 		clear();
-		insertAfter(beforeBegin(), p_Count, p_Val);
+		insert_after(before_begin(), p_Count, p_Val);
 	}
 
-	void assign(std::initializer_list<ValueType> p_Ilist) {
+	void assign(std::initializer_list<value_type> p_Ilist) {
 		assign(p_Ilist.begin(), p_Ilist.end());
 	}
 
@@ -373,38 +373,38 @@ private:
 
 public:
 	template <typename... Args>
-	void emplaceFront(Args&&... p_Args) {
+	void emplace_front(Args&&... p_Args) {
 		_InsertAfter(_BeforeHead(), std::forward<Args>(p_Args)...);
 	}
 
-	void pushFront(const ValueType& p_Val) {
+	void push_front(const value_type& p_Val) {
 		_InsertAfter(_BeforeHead(), p_Val);
 	}
 
-	void pushFront(ValueType&& p_Val) {
+	void push_front(value_type&& p_Val) {
 		_InsertAfter(_BeforeHead(), std::move(p_Val));
 	}
 
-	void popFront() {
+	void pop_front() {
 		_EraseAfter(_BeforeHead());
 	}
 
 	template <typename... Args>
-	Iterator emplaceAfter(ConstIterator p_Where, Args&&... p_Args) {
+	iterator emplace_after(const_iterator p_Where, Args&&... p_Args) {
 		_InsertAfter(p_Where.m_Ptr, std::forward<Args>(p_Args)...);
-		return Iterator(p_Where.m_Ptr->Next);
+		return iterator(p_Where.m_Ptr->Next);
 	}
 
-	Iterator insertAfter(ConstIterator p_Where, const ValueType& p_Val) {
+	iterator insert_after(const_iterator p_Where, const value_type& p_Val) {
 		_InsertAfter(p_Where.m_Ptr, p_Val);
-		return Iterator(p_Where.m_Ptr->Next);
+		return iterator(p_Where.m_Ptr->Next);
 	}
 
-	Iterator insertAfter(ConstIterator p_Where, ValueType&& p_Val) {
-		return emplaceAfter(p_Where, p_Val);
+	iterator insert_after(const_iterator p_Where, value_type&& p_Val) {
+		return emplace_after(p_Where, p_Val);
 	}
 
-	Iterator insertAfter(ConstIterator p_Where, SizeType p_Count, const ValueType& p_Val) {
+	iterator insert_after(const_iterator p_Where, size_type p_Count, const value_type& p_Val) {
 		_NodePointer After = p_Where.m_Ptr->Next;
 		while (p_Count != 0) {
 			_NodePointer NewNode = new _Node(After, p_Val);
@@ -412,35 +412,35 @@ public:
 			--p_Count;
 		}
 		p_Where.m_Ptr->Next = After;
-		return Iterator(After);
+		return iterator(After);
 	}
 
-	template <class InputIterator, std::enable_if_t<isIterator<InputIterator>, int> = 0>
-	Iterator insertAfter(ConstIterator p_Where, InputIterator p_First, InputIterator p_Last) {
+	template <class Inputiterator, std::enable_if_t<isiterator<Inputiterator>, int> = 0>
+	iterator insert_after(const_iterator p_Where, Inputiterator p_First, Inputiterator p_Last) {
 		for (; p_First != p_Last; ++p_First) {
-			p_Where = insertAfter(p_Where, *p_First);
+			p_Where = insert_after(p_Where, *p_First);
 		}
-		return Iterator(p_Where.m_Ptr);
+		return iterator(p_Where.m_Ptr);
 	}
 
-	Iterator insertAfter(ConstIterator p_Where, std::initializer_list<ValueType> p_Ilist) {
-		return insertAfter(p_Where, p_Ilist.begin(), p_Ilist.end());
+	iterator insert_after(const_iterator p_Where, std::initializer_list<value_type> p_Ilist) {
+		return insert_after(p_Where, p_Ilist.begin(), p_Ilist.end());
 	}
 
-	Iterator eraseAfter(ConstIterator p_Where) {
+	iterator erase_after(const_iterator p_Where) {
 		_EraseAfter(p_Where.m_Ptr);
-		return Iterator(p_Where.m_Ptr->Next);
+		return iterator(p_Where.m_Ptr->Next);
 	}
 
-	Iterator eraseAfter(ConstIterator p_First, ConstIterator p_Last) {
-		ConstIterator Curr(p_First.m_Ptr->Next);
+	iterator erase_after(const_iterator p_First, const_iterator p_Last) {
+		const_iterator Curr(p_First.m_Ptr->Next);
 		while (Curr != p_Last) {
 			_NodePointer Subject = Curr.m_Ptr;
 			++Curr;
 			delete Subject;
 		}
 		p_First.m_Ptr->Next = p_Last.m_Ptr;
-		return Iterator(p_Last.m_Ptr);
+		return iterator(p_Last.m_Ptr);
 	}
 
 	void swap(SinglyLinkedList& p_Other) {
@@ -448,9 +448,10 @@ public:
 		m_Head = p_Other.m_Head;
 		p_Other.m_Head = Temp;
 	}
+
 private:
 	template <typename... Args>
-	void _Resize(SizeType p_NewSize, Args&&... p_Args) {
+	void _Resize(size_type p_NewSize, Args&&... p_Args) {
 		_NodePointer Prev = _BeforeHead();
 		for (;;) {
 			_NodePointer Curr = Prev->Next;
@@ -482,11 +483,11 @@ private:
 	}
 
 public:
-	void resize(SizeType p_NewSize) {
+	void resize(size_type p_NewSize) {
 		_Resize(p_NewSize);
 	}
 
-	void resize(SizeType p_NewSize, const ValueType& p_Val) {
+	void resize(size_type p_NewSize, const value_type& p_Val) {
 		_Resize(p_NewSize, p_Val);
 	}
 
@@ -514,16 +515,16 @@ private:
 		}
 	}
 
-	void _SpliceAfter(ConstIterator p_Where, ConstIterator p_First, ConstIterator p_Last) {
+	void _SpliceAfter(const_iterator p_Where, const_iterator p_First, const_iterator p_Last) {
 		if (p_First == p_Last)
 			return;
 
-		ConstIterator After = p_First;
+		const_iterator After = p_First;
 		++After;
 		if (After == p_Last)
 			return;
 
-		ConstIterator Tail = p_First;
+		const_iterator Tail = p_First;
 		do {
 			Tail = After;
 			++After;
@@ -535,37 +536,37 @@ private:
 	}
 
 public:
-	void spliceAfter(ConstIterator p_Where, SinglyLinkedList& p_Other) {
+	void spliceAfter(const_iterator p_Where, SinglyLinkedList& p_Other) {
 		if (this != std::addressof(p_Other))
-			_SpliceAfter(p_Where, p_Other.beforeBegin(), p_Other.end());
+			_SpliceAfter(p_Where, p_Other.before_begin(), p_Other.end());
 	}
 
-	void spliceAfter(ConstIterator p_Where, SinglyLinkedList&& p_Other) {
+	void spliceAfter(const_iterator p_Where, SinglyLinkedList&& p_Other) {
 		spliceAfter(p_Where, p_Other);
 	}
 
-	void spliceAfter(ConstIterator p_Where, SinglyLinkedList& p_Other, ConstIterator p_First) {
+	void spliceAfter(const_iterator p_Where, SinglyLinkedList& p_Other, const_iterator p_First) {
 		(void)p_Other;
 		_SpliceAfter(p_Where.m_Ptr, p_First.m_Ptr);
 	}
 
-	void spliceAfter(ConstIterator p_Where, SinglyLinkedList&& p_Other, ConstIterator p_Target) {
+	void spliceAfter(const_iterator p_Where, SinglyLinkedList&& p_Other, const_iterator p_Target) {
 		spliceAfter(p_Where, p_Other, p_Target);
 	}
 
-	void spliceAfter(ConstIterator p_Where, SinglyLinkedList& p_Other,
-					 ConstIterator p_First, ConstIterator p_Last) {
+	void spliceAfter(const_iterator p_Where, SinglyLinkedList& p_Other,
+					 const_iterator p_First, const_iterator p_Last) {
 		(void)p_Other;
 		_SpliceAfter(p_Where, p_First, p_Last);
 	}
 
-	void spliceAfter(ConstIterator p_Where, SinglyLinkedList&& p_Other,
-					 ConstIterator p_First, ConstIterator p_Last) {
+	void spliceAfter(const_iterator p_Where, SinglyLinkedList&& p_Other,
+					 const_iterator p_First, const_iterator p_Last) {
 		spliceAfter(p_Where, p_Other, p_First, p_Last);
 	}
 
-	void remove(const ValueType& p_Val) {
-		removeIf([&](const ValueType& p_Each) { return p_Each = p_Val; });
+	void remove(const value_type& p_Val) {
+		removeIf([&](const value_type& p_Each) { return p_Each = p_Val; });
 	}
 
 	template <class Predicate>
@@ -585,7 +586,7 @@ public:
 	}
 
 	void unique() {
-		unique([](const ValueType& p_First, const ValueType& p_Second) { return p_First == p_Second; });
+		unique([](const value_type& p_First, const value_type& p_Second) { return p_First == p_Second; });
 	}
 
 	template <class Predicate>
